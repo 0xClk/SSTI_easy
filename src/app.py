@@ -4,8 +4,10 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
 def filtered(template):
-    blacklist = ["self.__dict__", "url_for", "config", "getitems", "../", "process"]
+    # Define a blacklist of dangerous or undesired strings
+    blacklist = ["self.__dict__", "url_for", "getitems", "../", "process", "7 * 7", "7*7"]
 
+    # Remove any blacklisted strings from the template
     for b in blacklist:
         if b in template:
             template = template.replace(b, "")
@@ -26,11 +28,11 @@ def template():
     if len(template) > 500:
         return "Too long input", 400
 
-    while filtered(template) != template:
-        template = filtered(template)
+    # Apply filtering to user-provided template
+    filtered_template = filtered(template)
 
-    # This line introduces SSTI vulnerability
-    return render_template_string(template)
+    # Render using filtered user-provided template
+    return render_template_string(filtered_template)
 
 if __name__ == '__main__':
     app.run(debug=True)
